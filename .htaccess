@@ -1,0 +1,21 @@
+Options -Indexes
+RewriteEngine On
+RewriteBase /tickets/
+
+# Bloquear acceso directo a archivos sensibles (.env, credenciales, etc.)
+<FilesMatch "^\.|\.(json|sql|log)$">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Deny from all
+    </IfModule>
+</FilesMatch>
+
+# No redirigir archivos o directorios reales
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+
+# Todo va a index.php
+RewriteRule ^(.*)$ index.php [QSA,L]
