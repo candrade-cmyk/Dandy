@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dandy · Reporte de Visita</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;800&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0c0c0e;
+  --s1: #151518;
+  --s2: #1c1c22;
+  --s3: #252530;
+  --border: rgba(255,255,255,0.08);
+  --border-2: rgba(255,255,255,0.13);
+  --text: #f0f0f5;
+  --dim: rgba(240,240,245,0.42);
+  --accent: #f5a623;
+  --accent-bg: rgba(245,166,35,0.12);
+  --green: #22c55e;
+  --yellow: #eab308;
+  --orange: #f97316;
+  --red: #ef4444;
+  --wa: #25D366;
+  --r: 14px;
+  --rs: 9px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 15px;
+  line-height: 1.5;
+  min-height: 100dvh;
+  padding-bottom: 40px;
+}
+
+/* ── HEADER ─────────────────────────────── */
+.hdr {
+  position: sticky; top: 0; z-index: 50;
+  background: rgba(12,12,14,0.92);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border);
+  padding: 14px 18px;
+  display: flex; align-items: center; gap: 12px;
+}
+
+.hdr-pulse {
+  width: 9px; height: 9px; border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 0 0 var(--accent);
+  animation: pulse 2.4s ease infinite;
+}
+
+@keyframes pulse {
+  0%,100% { box-shadow: 0 0 0 0 rgba(245,166,35,0.4); }
+  50% { box-shadow: 0 0 0 6px rgba(245,166,35,0); }
+}
+
+.hdr-title {
+  font-family: 'Syne', sans-serif;
+  font-weight: 800; font-size: 20px;
+  letter-spacing: -0.5px;
+}
+
+.hdr-sub {
+  font-size: 12px; color: var(--dim); font-weight: 300;
+  margin-left: auto; letter-spacing: 0.1px;
+}
+
+/* ── LAYOUT ─────────────────────────────── */
+.wrap {
+  max-width: 580px; margin: 0 auto;
+  padding: 16px 14px calc(84px + env(safe-area-inset-bottom));
+  display: flex; flex-direction: column; gap: 14px;
+}
+
+/* ── CARD ───────────────────────────────── */
+.card {
+  background: var(--s1);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 18px 16px;
+  animation: fadeUp 0.3s ease both;
+}
+
+.card:nth-child(1) { animation-delay: 0.04s; }
+.card:nth-child(2) { animation-delay: 0.08s; }
+.card:nth-child(3) { animation-delay: 0.12s; }
+.card:nth-child(4) { animation-delay: 0.16s; }
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.card-tag {
+  font-family: 'DM Mono', monospace;
+  font-size: 10.5px; letter-spacing: 1.8px;
+  text-transform: uppercase; color: var(--accent);
+  margin-bottom: 16px; display: block;
+}
+
+/* ── FORM FIELDS ─────────────────────────── */
+.field { display: flex; flex-direction: column; gap: 5px; margin-bottom: 13px; }
+.field:last-child { margin-bottom: 0; }
+
+.lbl { font-size: 12.5px; font-weight: 500; color: var(--dim); }
+
+input[type="text"],
+input[type="number"],
+input[type="date"],
+textarea {
+  background: var(--s2);
+  border: 1px solid var(--border);
+  border-radius: var(--rs);
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 15px; font-weight: 400;
+  padding: 10px 13px; width: 100%;
+  outline: none;
+  transition: border-color 0.18s, box-shadow 0.18s;
+  -webkit-appearance: none; appearance: none;
+}
+
+input:focus, textarea:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(245,166,35,0.1);
+}
+
+textarea { resize: vertical; min-height: 88px; line-height: 1.55; }
+
+.row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+/* ── STEP COUNTER INPUT ───────────────────── */
+.stepper {
+  display: flex; align-items: center;
+  background: var(--s2);
+  border: 1px solid var(--border);
+  border-radius: var(--rs); overflow: hidden;
+  transition: border-color 0.18s, box-shadow 0.18s;
+}
+.stepper:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(245,166,35,0.1);
+}
+.step-btn {
+  width: 40px; height: 42px; flex-shrink: 0;
+  background: none; border: none; color: var(--dim);
+  font-size: 18px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: color 0.15s;
+}
+.step-btn:hover { color: var(--accent); }
+.stepper input {
+  flex: 1; text-align: center; background: none; border: none;
+  color: var(--text); font-family: 'DM Mono', monospace;
+  font-size: 15px; font-weight: 500;
+  padding: 0; border-radius: 0; box-shadow: none;
+}
+
+/* ── CHIP / MULTI-SELECT ─────────────────── */
+.chip-group { display: flex; flex-wrap: wrap; gap: 7px; }
+.chip {
+  display: inline-flex; align-items: center;
+  padding: 6px 13px; border-radius: 100px;
+  border: 1px solid var(--border);
+  background: var(--s2); color: var(--dim);
+  font-size: 13px; font-weight: 500;
+  cursor: pointer; user-select: none;
+  transition: all 0.15s;
+}
+.chip input { display: none; }
+.chip:has(input:checked) {
+  background: var(--accent-bg);
+  border-color: var(--accent); color: var(--accent);
+}
+
+/* ── RISK GRID ───────────────────────────── */
+.risk-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+
+.risk-opt { cursor: pointer; }
+.risk-opt input { display: none; }
+
+.risk-card {
+  border: 1.5px solid var(--border);
+  border-radius: var(--rs); padding: 11px 13px;
+  display: flex; align-items: center; gap: 9px;
+  background: var(--s2);
+  transition: all 0.15s;
+}
+
+.rdot {
+  width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0;
+  transition: box-shadow 0.2s;
+}
+
+.rtxt { font-size: 13px; font-weight: 500; color: var(--dim); transition: color 0.15s; }
+
+.risk-opt.g  .rdot { background: var(--green); }
+.risk-opt.y  .rdot { background: var(--yellow); }
+.risk-opt.o  .rdot { background: var(--orange); }
+.risk-opt.r  .rdot { background: var(--red); }
+
+.risk-opt.g  input:checked ~ .risk-card { border-color: var(--green); background: rgba(34,197,94,.1); }
+.risk-opt.g  input:checked ~ .risk-card .rtxt { color: var(--green); }
+.risk-opt.g  input:checked ~ .risk-card .rdot { box-shadow: 0 0 8px var(--green); }
+
+.risk-opt.y  input:checked ~ .risk-card { border-color: var(--yellow); background: rgba(234,179,8,.1); }
+.risk-opt.y  input:checked ~ .risk-card .rtxt { color: var(--yellow); }
+.risk-opt.y  input:checked ~ .risk-card .rdot { box-shadow: 0 0 8px var(--yellow); }
+
+.risk-opt.o  input:checked ~ .risk-card { border-color: var(--orange); background: rgba(249,115,22,.1); }
+.risk-opt.o  input:checked ~ .risk-card .rtxt { color: var(--orange); }
+.risk-opt.o  input:checked ~ .risk-card .rdot { box-shadow: 0 0 8px var(--orange); }
+
+.risk-opt.r  input:checked ~ .risk-card { border-color: var(--red); background: rgba(239,68,68,.1); }
+.risk-opt.r  input:checked ~ .risk-card .rtxt { color: var(--red); }
+.risk-opt.r  input:checked ~ .risk-card .rdot { box-shadow: 0 0 8px var(--red); }
+
+/* ── DIVIDER ─────────────────────────────── */
+.div { height: 1px; background: var(--border); margin: 4px 0; }
+
+/* ── TOGGLE ROWS ─────────────────────────── */
+.tog-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 11px 0; border-bottom: 1px solid var(--border);
+}
+.tog-row:last-of-type { border-bottom: none; padding-bottom: 0; }
+.tog-row:first-of-type { padding-top: 0; }
+
+.tog-lbl { font-size: 14px; font-weight: 500; }
+
+.tog {
+  position: relative; width: 44px; height: 26px; flex-shrink: 0; cursor: pointer;
+}
+.tog input { opacity: 0; width: 0; height: 0; position: absolute; }
+.tog-track {
+  position: absolute; inset: 0;
+  background: var(--s3); border-radius: 13px;
+  border: 1px solid var(--border-2);
+  transition: background 0.2s, border-color 0.2s;
+}
+.tog-thumb {
+  position: absolute; top: 3px; left: 3px;
+  width: 18px; height: 18px; border-radius: 50%;
+  background: var(--dim);
+  transition: transform 0.2s cubic-bezier(.4,0,.2,1), background 0.2s;
+}
+.tog input:checked ~ .tog-track { background: var(--accent); border-color: var(--accent); }
+.tog input:checked ~ .tog-track .tog-thumb { transform: translateX(18px); background: #fff; }
+
+/* ── BTN GROUP (pagos) ───────────────────── */
+.btn-group { display: flex; gap: 7px; }
+.btn-group label {
+  flex: 1; text-align: center;
+  padding: 10px 4px; font-size: 15px; font-weight: 600;
+  border: 1px solid var(--border); border-radius: var(--rs);
+  background: var(--s2); color: var(--dim);
+  cursor: pointer; transition: all 0.15s;
+}
+.btn-group input { display: none; }
+.btn-group label:has(input:checked) {
+  background: var(--accent-bg); border-color: var(--accent); color: var(--accent);
+}
+
+/* ── PRICE INPUT ─────────────────────────── */
+.price-wrap { position: relative; }
+.price-prefix {
+  position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
+  color: var(--dim); font-family: 'DM Mono', monospace; font-size: 13px;
+  pointer-events: none;
+}
+.price-wrap input { padding-left: 26px; }
+
+/* ── OBSERVATIONS ────────────────────────── */
+.obs-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
+
+.obs-item {
+  display: flex; align-items: flex-start; gap: 8px;
+  padding: 10px 11px;
+  border: 1px solid var(--border); border-radius: var(--rs);
+  background: var(--s2); cursor: pointer; user-select: none;
+  transition: border-color 0.15s, background 0.15s;
+}
+.obs-item input { display: none; }
+
+.obs-box {
+  width: 16px; height: 16px; flex-shrink: 0; margin-top: 1px;
+  border-radius: 4px; border: 1.5px solid var(--border-2);
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.15s, border-color 0.15s;
+}
+.obs-box::after { content: '✓'; font-size: 10px; color: #fff; opacity: 0; transition: opacity 0.15s; }
+
+.obs-txt { font-size: 12px; color: var(--dim); line-height: 1.4; transition: color 0.15s; }
+
+.obs-item:has(input:checked) { border-color: var(--accent); background: var(--accent-bg); }
+.obs-item:has(input:checked) .obs-box { background: var(--accent); border-color: var(--accent); }
+.obs-item:has(input:checked) .obs-box::after { opacity: 1; }
+.obs-item:has(input:checked) .obs-txt { color: var(--text); }
+
+/* ── SUBMIT ──────────────────────────────── */
+.submit-btn {
+  width: 100%; padding: 15px 20px;
+  background: var(--wa);
+  border: none; border-radius: var(--r);
+  color: #fff; font-family: 'DM Sans', sans-serif;
+  font-size: 15.5px; font-weight: 600;
+  cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px;
+  transition: opacity 0.18s, transform 0.1s;
+  letter-spacing: -0.2px;
+  animation: fadeUp 0.3s 0.22s ease both;
+}
+.submit-btn:hover { opacity: 0.9; }
+.submit-btn:active { transform: scale(0.987); }
+
+.wa-svg { width: 20px; height: 20px; flex-shrink: 0; }
+
+/* ── COPY BTN ────────────────────────────── */
+.copy-btn {
+  width: 100%; padding: 13px 20px;
+  background: var(--s2);
+  border: 1px solid var(--border-2); border-radius: var(--r);
+  color: var(--text); font-family: 'DM Sans', sans-serif;
+  font-size: 14.5px; font-weight: 600;
+  cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 9px;
+  transition: background 0.15s, border-color 0.15s, transform 0.1s;
+  letter-spacing: -0.2px;
+}
+.copy-btn:hover { border-color: var(--border); background: var(--s3); }
+.copy-btn:active { transform: scale(0.987); }
+.copy-btn.copied { background: rgba(34,197,94,.12); border-color: var(--green); color: var(--green); }
+
+.copy-svg { width: 17px; height: 17px; flex-shrink: 0; }
+
+/* ── TABS ────────────────────────────────── */
+.tab-nav {
+  position: sticky; top: 49px; z-index: 40;
+  display: flex;
+  background: rgba(12,12,14,0.92);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border);
+  padding: 0 10px;
+}
+.tab-btn {
+  flex: 1; background: none; border: none;
+  color: var(--dim); font-family: 'DM Sans', sans-serif;
+  font-size: 12.5px; font-weight: 600;
+  padding: 12px 4px 10px;
+  cursor: pointer;
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  border-bottom: 2px solid transparent;
+  transition: color 0.15s, border-color 0.15s;
+}
+.tab-btn .tnum {
+  font-family: 'DM Mono', monospace; font-size: 11px;
+  width: 20px; height: 20px; border-radius: 50%;
+  background: var(--s2); display: flex; align-items: center; justify-content: center;
+  transition: background 0.15s, color 0.15s;
+}
+.tab-btn.active { color: var(--text); border-color: var(--accent); }
+.tab-btn.active .tnum { background: var(--accent); color: #0c0c0e; }
+
+.tab-panel { display: none; }
+.tab-panel.active { display: flex; flex-direction: column; gap: 14px; }
+
+/* ── ACTION BAR (fija, siempre visible) ──── */
+.action-bar {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 50;
+  display: flex; gap: 8px;
+  padding: 10px 14px calc(10px + env(safe-area-inset-bottom));
+  background: rgba(12,12,14,0.92);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-top: 1px solid var(--border);
+  max-width: 580px; margin: 0 auto;
+}
+.action-bar .submit-btn { animation: none; font-size: 14px; padding: 13px 14px; }
+.action-bar .copy-btn { flex: 0 0 auto; width: auto; padding: 13px 16px; }
+
+/* ── RESPONSIVE ──────────────────────────── */
+@media (max-width: 400px) {
+  .obs-grid { grid-template-columns: 1fr; }
+  .row2 { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<header class="hdr">
+  <div class="hdr-pulse"></div>
+  <span class="hdr-title">Dandy</span>
+  <span class="hdr-sub">Reporte de Visita · Progrentis</span>
+</header>
+
+<nav class="tab-nav">
+  <button class="tab-btn active" id="tabBtn1" onclick="switchTab(1)"><span class="tnum">01</span>Visita</button>
+  <button class="tab-btn" id="tabBtn2" onclick="switchTab(2)"><span class="tnum">02</span>Recompra</button>
+  <button class="tab-btn" id="tabBtn3" onclick="switchTab(3)"><span class="tnum">03</span>Notas</button>
+  <button class="tab-btn" id="tabBtn4" onclick="switchTab(4)"><span class="tnum">04</span>Cierre</button>
+</nav>
+
+<div class="wrap">
+
+  <!-- 01 · Datos de la visita -->
+  <section class="tab-panel active" id="tabPanel1">
+  <div class="card">
+    <span class="card-tag">01 · Datos de la visita</span>
+
+    <div class="field">
+      <span class="lbl">Institución</span>
+      <input type="text" id="institucion" placeholder="Nombre del colegio o centro educativo" autocomplete="off">
+    </div>
+
+    <div class="row2">
+      <div class="field">
+        <span class="lbl">Cantidad de estudiantes</span>
+        <div class="stepper">
+          <button class="step-btn" type="button" onclick="adj('est',-10)">−</button>
+          <input type="number" id="est" value="100" min="0">
+          <button class="step-btn" type="button" onclick="adj('est',10)">+</button>
+        </div>
+      </div>
+      <div class="field">
+        <span class="lbl">Fecha de visita</span>
+        <input type="date" id="fecha">
+      </div>
+    </div>
+
+    <div class="field">
+      <span class="lbl">Reunidos con (contacto en la institución)</span>
+      <input type="text" id="contacto" placeholder="Nombre y cargo" autocomplete="off">
+    </div>
+
+    <div class="field" style="margin-bottom:0">
+      <span class="lbl">Acompañado de</span>
+      <div class="chip-group">
+        <label class="chip"><input type="checkbox" name="ac" value="Nathan Castillo"> Nathan Castillo</label>
+        <label class="chip"><input type="checkbox" name="ac" value="Nicola"> Nicola</label>
+        <label class="chip"><input type="checkbox" name="ac" value="Ana Gabriela"> Ana Gabriela</label>
+        <label class="chip"><input type="checkbox" name="ac" value="Solo"> Solo</label>
+      </div>
+    </div>
+  </div>
+  </section>
+
+  <!-- 02 · Estado de recompra -->
+  <section class="tab-panel" id="tabPanel2">
+  <div class="card">
+    <span class="card-tag">02 · Estado de recompra</span>
+
+    <div class="field">
+      <span class="lbl">Nivel de riesgo de no recompra</span>
+      <div class="risk-grid">
+        <label class="risk-opt g">
+          <input type="radio" name="riesgo" value="Sin riesgo">
+          <div class="risk-card"><div class="rdot"></div><span class="rtxt">Sin riesgo</span></div>
+        </label>
+        <label class="risk-opt y">
+          <input type="radio" name="riesgo" value="Riesgo bajo">
+          <div class="risk-card"><div class="rdot"></div><span class="rtxt">Riesgo bajo</span></div>
+        </label>
+        <label class="risk-opt o">
+          <input type="radio" name="riesgo" value="Riesgo alto">
+          <div class="risk-card"><div class="rdot"></div><span class="rtxt">Riesgo alto</span></div>
+        </label>
+        <label class="risk-opt r">
+          <input type="radio" name="riesgo" value="Riesgo crítico">
+          <div class="risk-card"><div class="rdot"></div><span class="rtxt">Riesgo crítico</span></div>
+        </label>
+      </div>
+    </div>
+
+    <div class="div"></div>
+
+    <div class="tog-row">
+      <span class="tog-lbl">Proforma firmada</span>
+      <label class="tog">
+        <input type="checkbox" id="proforma">
+        <div class="tog-track"><div class="tog-thumb"></div></div>
+      </label>
+    </div>
+
+    <div class="tog-row">
+      <span class="tog-lbl">Progrentis tiene nota académica</span>
+      <label class="tog">
+        <input type="checkbox" id="nota">
+        <div class="tog-track"><div class="tog-thumb"></div></div>
+      </label>
+    </div>
+
+    <div class="div" style="margin-top:10px"></div>
+
+    <div class="row2" style="margin-top:12px">
+      <div class="field">
+        <span class="lbl">Precio cobro a familias</span>
+        <div class="price-wrap">
+          <span class="price-prefix">$</span>
+          <input type="number" id="precio" placeholder="0" min="0">
+        </div>
+      </div>
+      <div class="field">
+        <span class="lbl">Número de pagos</span>
+        <div class="btn-group">
+          <label><input type="radio" name="pagos" value="1">1</label>
+          <label><input type="radio" name="pagos" value="2">2</label>
+          <label><input type="radio" name="pagos" value="3">3</label>
+        </div>
+      </div>
+    </div>
+  </div>
+  </section>
+
+  <!-- 03 · Observaciones -->
+  <section class="tab-panel" id="tabPanel3">
+  <div class="card">
+    <span class="card-tag">03 · Observaciones frecuentes</span>
+    <div class="obs-grid">
+      <label class="obs-item">
+        <input type="checkbox" value="Desea subir el precio de Progrentis">
+        <div class="obs-box"></div><span class="obs-txt">Quiere subir precio</span>
+      </label>
+      <label class="obs-item">
+        <input type="checkbox" value="Cambio de coordinador/a próximamente">
+        <div class="obs-box"></div><span class="obs-txt">Cambio coordinador/a</span>
+      </label>
+      <label class="obs-item">
+        <input type="checkbox" value="Problema administrativo con IVA">
+        <div class="obs-box"></div><span class="obs-txt">Problema con IVA</span>
+      </label>
+      <label class="obs-item">
+        <input type="checkbox" value="Interés en expandir a secundaria">
+        <div class="obs-box"></div><span class="obs-txt">Expandir a secundaria</span>
+      </label>
+      <label class="obs-item">
+        <input type="checkbox" value="Presión de padres de familia contra el programa">
+        <div class="obs-box"></div><span class="obs-txt">Presión de padres</span>
+      </label>
+      <label class="obs-item">
+        <input type="checkbox" value="Institución en riesgo de cierre por baja matrícula">
+        <div class="obs-box"></div><span class="obs-txt">Riesgo de cierre</span>
+      </label>
+      <label class="obs-item">
+        <input type="checkbox" value="Interés en expandir Progrentis a otra sede">
+        <div class="obs-box"></div><span class="obs-txt">Expandir a otra sede</span>
+      </label>
+      <label class="obs-item">
+        <input type="checkbox" value="Participaron en InnovaPro">
+        <div class="obs-box"></div><span class="obs-txt">Participaron InnovaPro</span>
+      </label>
+      <label class="obs-item">
+        <input type="checkbox" value="Materiales deteriorados (lonas / taxonomías)">
+        <div class="obs-box"></div><span class="obs-txt">Materiales deteriorados</span>
+      </label>
+      <label class="obs-item">
+        <input type="checkbox" value="Renuentes a colocar nota académica a Progrentis">
+        <div class="obs-box"></div><span class="obs-txt">Sin nota (renuentes)</span>
+      </label>
+      <label class="obs-item">
+        <input type="checkbox" value="Precio de cobro muy bajo (casi al costo)">
+        <div class="obs-box"></div><span class="obs-txt">Cobro demasiado bajo</span>
+      </label>
+      <label class="obs-item">
+        <input type="checkbox" value="Morosidad o desorden en los pagos de familias">
+        <div class="obs-box"></div><span class="obs-txt">Morosidad en pagos</span>
+      </label>
+    </div>
+  </div>
+  </section>
+
+  <!-- 04 · Seguimiento y opinión -->
+  <section class="tab-panel" id="tabPanel4">
+  <div class="card">
+    <span class="card-tag">04 · Seguimiento y opinión</span>
+
+    <div class="field">
+      <span class="lbl">Puntos de seguimiento</span>
+      <textarea id="seguimiento" placeholder="¿Qué acciones concretas se deben tomar?&#10;Ej: solicitar firma de proforma, coordinar capacitación con Florem..."></textarea>
+    </div>
+
+    <div class="field" style="margin-bottom:0">
+      <span class="lbl">Opinión del Gerente de Fidelización y Retención</span>
+      <textarea id="opinion" placeholder="Valoración personal sobre la situación del cliente y la probabilidad de continuidad..."></textarea>
+    </div>
+  </div>
+  </section>
+
+</div>
+
+<div class="action-bar">
+  <button class="submit-btn" onclick="enviar()">
+    <svg class="wa-svg" viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg">
+      <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+    </svg>
+    Enviar por WhatsApp
+  </button>
+
+  <button class="copy-btn" id="copyBtn" onclick="copiarMensaje()">
+    <svg class="copy-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg">
+      <rect x="9" y="9" width="12" height="12" rx="2"></rect>
+      <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"></path>
+    </svg>
+    <span id="copyBtnLabel">Copiar</span>
+  </button>
+</div>
+
+<script>
+// Fecha de hoy por defecto
+document.getElementById('fecha').valueAsDate = new Date();
+
+function adj(id, delta) {
+  const el = document.getElementById(id);
+  el.value = Math.max(0, (parseInt(el.value) || 0) + delta);
+}
+
+function switchTab(n) {
+  for (let i = 1; i <= 4; i++) {
+    document.getElementById('tabPanel' + i).classList.toggle('active', i === n);
+    document.getElementById('tabBtn' + i).classList.toggle('active', i === n);
+  }
+  window.scrollTo({ top: 0, behavior: 'instant' });
+}
+
+function buildMessage() {
+  const inst    = v('institucion') || '—';
+  const est     = v('est')         || '—';
+  const contact = v('contacto')   || '—';
+  const fecha   = document.getElementById('fecha').value;
+  const proforma = document.getElementById('proforma').checked;
+  const nota    = document.getElementById('nota').checked;
+  const precio  = v('precio')      || '—';
+  const seguim  = v('seguimiento') || '—';
+  const opinion = v('opinion')     || '—';
+
+  const acomps = [...document.querySelectorAll('input[name="ac"]:checked')].map(e => e.value);
+  const acomp  = acomps.length ? acomps.join(', ') : 'Solo';
+
+  const riesgoEl = document.querySelector('input[name="riesgo"]:checked');
+  const riesgo   = riesgoEl ? riesgoEl.value : '—';
+  const emoji    = { 'Sin riesgo': '🟢', 'Riesgo bajo': '🟡', 'Riesgo alto': '🟠', 'Riesgo crítico': '🔴' }[riesgo] || '⚪';
+
+  const pagosEl = document.querySelector('input[name="pagos"]:checked');
+  const pagos   = pagosEl ? pagosEl.value : '—';
+
+  const obs = [...document.querySelectorAll('.obs-item input:checked')].map(e => `• ${e.value}`);
+  const obsStr = obs.length ? obs.join('\n') : '• Sin observaciones adicionales';
+
+  const fechaFmt = fecha
+    ? new Date(fecha + 'T12:00:00').toLocaleDateString('es-MX', { day: 'numeric', month: 'long', year: 'numeric' })
+    : '—';
+
+  const msg = [
+    `🐕 *REPORTE DANDY — PROGRENTIS*`,
+    `━━━━━━━━━━━━━━━━━━━━`,
+    `🏫 *Institución:* ${inst}`,
+    `📅 *Fecha:* ${fechaFmt}`,
+    `👥 *Estudiantes:* ${est}`,
+    `🤝 *Reunidos con:* ${contact}`,
+    `👔 *Acompañado de:* ${acomp}`,
+    ``,
+    `📊 *ESTADO DE RECOMPRA*`,
+    `━━━━━━━━━━━━━━━━━━━━`,
+    `${emoji} *Nivel de riesgo:* ${riesgo}`,
+    `📋 *Proforma firmada:* ${proforma ? '✅ Sí' : '❌ No'}`,
+    `💰 *Precio cobro a familias:* $${precio}`,
+    `🗓 *Pagos:* ${pagos} pago(s)`,
+    `📝 *Nota académica:* ${nota ? '✅ Sí' : '❌ No'}`,
+    ``,
+    `⚠️ *OBSERVACIONES*`,
+    `━━━━━━━━━━━━━━━━━━━━`,
+    obsStr,
+    ``,
+    `✅ *SEGUIMIENTO*`,
+    `━━━━━━━━━━━━━━━━━━━━`,
+    seguim,
+    ``,
+    `💼 *OPINIÓN DEL GERENTE*`,
+    `━━━━━━━━━━━━━━━━━━━━`,
+    opinion,
+  ].join('\n');
+
+  return msg;
+}
+
+function enviar() {
+  const msg = buildMessage();
+  window.open(`https://wa.me/50684816464?text=${encodeURIComponent(msg)}`, '_blank');
+}
+
+async function copiarMensaje() {
+  const msg = buildMessage();
+  const btn = document.getElementById('copyBtn');
+  const lbl = document.getElementById('copyBtnLabel');
+
+  try {
+    await navigator.clipboard.writeText(msg);
+  } catch (e) {
+    const ta = document.createElement('textarea');
+    ta.value = msg;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+  }
+
+  const prevLbl = lbl.textContent;
+  btn.classList.add('copied');
+  lbl.textContent = '¡Copiado!';
+  setTimeout(() => {
+    btn.classList.remove('copied');
+    lbl.textContent = prevLbl;
+  }, 1600);
+}
+
+function v(id) {
+  return document.getElementById(id).value.trim();
+}
+</script>
+</body>
+</html>
