@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dandy · Reportes</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;800&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0c0c0e;
+  --s1: #151518;
+  --s2: #1c1c22;
+  --s3: #252530;
+  --border: rgba(255,255,255,0.08);
+  --border-2: rgba(255,255,255,0.13);
+  --text: #f0f0f5;
+  --dim: rgba(240,240,245,0.42);
+  --accent: #f5a623;
+  --accent-bg: rgba(245,166,35,0.12);
+  --green: #22c55e;
+  --yellow: #eab308;
+  --orange: #f97316;
+  --red: #ef4444;
+  --r: 14px;
+  --rs: 9px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 15px;
+  line-height: 1.5;
+  min-height: 100dvh;
+  padding-bottom: 40px;
+}
+
+/* ── HEADER ─────────────────────────────── */
+.hdr {
+  position: sticky; top: 0; z-index: 50;
+  background: rgba(12,12,14,0.92);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border);
+  padding: 14px 18px;
+  display: flex; align-items: center; gap: 12px;
+}
+
+.hdr-pulse {
+  width: 9px; height: 9px; border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 0 0 var(--accent);
+  animation: pulse 2.4s ease infinite;
+  flex-shrink: 0;
+}
+
+@keyframes pulse {
+  0%,100% { box-shadow: 0 0 0 0 rgba(245,166,35,0.4); }
+  50% { box-shadow: 0 0 0 6px rgba(245,166,35,0); }
+}
+
+.hdr-title {
+  font-family: 'Syne', sans-serif;
+  font-weight: 800; font-size: 20px;
+  letter-spacing: -0.5px;
+}
+
+.hdr-sub {
+  font-size: 12px; color: var(--dim); font-weight: 300;
+  margin-left: auto; letter-spacing: 0.1px;
+  white-space: nowrap;
+}
+
+.hdr-refresh {
+  flex-shrink: 0;
+  display: flex; align-items: center; gap: 6px;
+  background: var(--s2);
+  border: 1px solid var(--border-2);
+  border-radius: 100px;
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px; font-weight: 600;
+  padding: 8px 14px;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, transform 0.1s;
+}
+.hdr-refresh:hover { background: var(--s3); border-color: var(--border); }
+.hdr-refresh:active { transform: scale(0.96); }
+.hdr-refresh svg { width: 14px; height: 14px; flex-shrink: 0; transition: transform 0.4s ease; }
+.hdr-refresh.spinning svg { animation: spin 0.7s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── LAYOUT ─────────────────────────────── */
+.wrap {
+  max-width: 720px; margin: 0 auto;
+  padding: 16px 14px calc(40px + env(safe-area-inset-bottom));
+  display: flex; flex-direction: column; gap: 14px;
+}
+
+/* ── TOOLBAR ────────────────────────────── */
+.toolbar {
+  display: flex; flex-direction: column; gap: 10px;
+  position: sticky; top: 63px; z-index: 40;
+  background: rgba(12,12,14,0.92);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  padding: 12px 0;
+  margin: -4px 0 0;
+}
+
+.search-wrap { position: relative; }
+.search-wrap svg {
+  position: absolute; left: 13px; top: 50%; transform: translateY(-50%);
+  width: 16px; height: 16px; color: var(--dim); pointer-events: none;
+}
+#searchInput {
+  width: 100%;
+  background: var(--s2);
+  border: 1px solid var(--border);
+  border-radius: var(--rs);
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 15px; font-weight: 400;
+  padding: 11px 13px 11px 38px;
+  outline: none;
+  transition: border-color 0.18s, box-shadow 0.18s;
+  -webkit-appearance: none; appearance: none;
+}
+#searchInput:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(245,166,35,0.1);
+}
+#searchInput::placeholder { color: var(--dim); }
+
+.chip-row { display: flex; flex-wrap: wrap; gap: 7px; align-items: center; justify-content: space-between; }
+.chip-group { display: flex; flex-wrap: wrap; gap: 7px; }
+.filter-chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 6px 13px; border-radius: 100px;
+  border: 1px solid var(--border);
+  background: var(--s2); color: var(--dim);
+  font-size: 13px; font-weight: 500;
+  cursor: pointer; user-select: none;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+.filter-chip .rdot { width: 7px; height: 7px; border-radius: 50%; }
+.filter-chip.active {
+  background: var(--accent-bg);
+  border-color: var(--accent); color: var(--accent);
+}
+.filter-chip.active.g { background: rgba(34,197,94,.12); border-color: var(--green); color: var(--green); }
+.filter-chip.active.y { background: rgba(234,179,8,.12); border-color: var(--yellow); color: var(--yellow); }
+.filter-chip.active.o { background: rgba(249,115,22,.12); border-color: var(--orange); color: var(--orange); }
+.filter-chip.active.r { background: rgba(239,68,68,.12); border-color: var(--red); color: var(--red); }
+
+.count-badge {
+  font-family: 'DM Mono', monospace;
+  font-size: 12px; color: var(--dim);
+  white-space: nowrap;
+  padding: 4px 0;
+}
+
+/* ── CARD ───────────────────────────────── */
+.card {
+  background: var(--s1);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 16px;
+  animation: fadeUp 0.3s ease both;
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+.card:hover { border-color: var(--border-2); }
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.card-summary {
+  display: flex; align-items: center; gap: 12px;
+}
+
+.card-main { flex: 1; min-width: 0; }
+
+.card-inst {
+  font-family: 'Syne', sans-serif;
+  font-weight: 600; font-size: 16.5px;
+  letter-spacing: -0.2px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+.card-meta {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  margin-top: 6px;
+  font-size: 12.5px; color: var(--dim);
+}
+
+.risk-pill { display: inline-flex; align-items: center; gap: 6px; }
+.rdot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.rdot.g { background: var(--green); box-shadow: 0 0 6px var(--green); }
+.rdot.y { background: var(--yellow); box-shadow: 0 0 6px var(--yellow); }
+.rdot.o { background: var(--orange); box-shadow: 0 0 6px var(--orange); }
+.rdot.r { background: var(--red); box-shadow: 0 0 6px var(--red); }
+.rdot.n { background: var(--dim); box-shadow: none; }
+
+.meta-sep { color: var(--border-2); }
+
+.card-est {
+  font-family: 'DM Mono', monospace;
+  font-size: 12.5px;
+}
+
+.expand-btn {
+  flex-shrink: 0;
+  width: 30px; height: 30px; border-radius: 50%;
+  background: var(--s2); border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--dim);
+  transition: transform 0.25s ease, background 0.15s, color 0.15s;
+}
+.card.open .expand-btn { transform: rotate(180deg); background: var(--accent-bg); color: var(--accent); border-color: var(--accent); }
+.expand-btn svg { width: 15px; height: 15px; }
+
+.card-detail {
+  display: none;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+  flex-direction: column;
+  gap: 14px;
+}
+.card.open .card-detail { display: flex; }
+
+.detail-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+}
+
+.detail-item { display: flex; flex-direction: column; gap: 4px; }
+.detail-lbl {
+  font-size: 11px; font-weight: 600; letter-spacing: 0.4px;
+  text-transform: uppercase; color: var(--dim);
+}
+.detail-val { font-size: 14px; font-weight: 400; }
+.detail-val.mono { font-family: 'DM Mono', monospace; }
+
+.badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 4px 10px; border-radius: 100px;
+  font-size: 12.5px; font-weight: 600;
+  width: fit-content;
+}
+.badge.yes { background: rgba(34,197,94,.12); color: var(--green); }
+.badge.no { background: rgba(239,68,68,.12); color: var(--red); }
+
+.obs-list { display: flex; flex-direction: column; gap: 6px; }
+.obs-tag {
+  font-size: 12.5px; color: var(--text);
+  background: var(--s2); border: 1px solid var(--border);
+  border-radius: var(--rs); padding: 8px 11px;
+  display: flex; align-items: flex-start; gap: 8px;
+}
+.obs-tag::before { content: '•'; color: var(--accent); font-weight: 700; }
+
+.text-block {
+  font-size: 13.5px; color: var(--text);
+  background: var(--s2); border: 1px solid var(--border);
+  border-radius: var(--rs); padding: 11px 13px;
+  white-space: pre-wrap; word-break: break-word;
+  line-height: 1.55;
+}
+
+.card-tag {
+  font-family: 'DM Mono', monospace;
+  font-size: 10.5px; letter-spacing: 1.4px;
+  text-transform: uppercase; color: var(--accent);
+  margin-bottom: 8px; display: block;
+}
+
+/* ── STATE PANELS ───────────────────────── */
+.state-panel {
+  background: var(--s1);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 40px 24px;
+  text-align: center;
+  display: flex; flex-direction: column; align-items: center; gap: 10px;
+  animation: fadeUp 0.3s ease both;
+}
+.state-icon {
+  width: 44px; height: 44px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--s2); margin-bottom: 4px;
+}
+.state-icon svg { width: 22px; height: 22px; }
+.state-title {
+  font-family: 'Syne', sans-serif; font-weight: 600; font-size: 16px;
+}
+.state-sub { font-size: 13.5px; color: var(--dim); max-width: 380px; }
+
+.state-panel.error .state-icon { background: rgba(239,68,68,.12); color: var(--red); }
+.state-panel.empty .state-icon { background: var(--accent-bg); color: var(--accent); }
+
+.retry-btn {
+  margin-top: 8px;
+  background: var(--accent-bg); color: var(--accent);
+  border: 1px solid var(--accent);
+  border-radius: var(--rs);
+  padding: 9px 18px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13.5px; font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+.retry-btn:hover { opacity: 0.85; }
+
+.err-detail {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px; color: var(--dim);
+  background: var(--s2); border: 1px solid var(--border);
+  border-radius: var(--rs); padding: 8px 11px;
+  max-width: 100%; overflow-x: auto;
+  margin-top: 4px;
+}
+
+/* ── SKELETON LOADER ────────────────────── */
+.skel-card {
+  background: var(--s1); border: 1px solid var(--border);
+  border-radius: var(--r); padding: 16px;
+  animation: fadeUp 0.3s ease both;
+}
+.skel-line {
+  height: 12px; border-radius: 6px;
+  background: linear-gradient(90deg, var(--s2) 25%, var(--s3) 50%, var(--s2) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s ease infinite;
+}
+@keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+.skel-title { width: 50%; height: 16px; margin-bottom: 10px; }
+.skel-meta { width: 70%; }
+
+/* ── RESPONSIVE ──────────────────────────── */
+@media (max-width: 480px) {
+  .detail-grid { grid-template-columns: 1fr; }
+  .hdr-sub { display: none; }
+  .card-inst { font-size: 15.5px; }
+}
+
+@media (min-width: 700px) {
+  .wrap { padding-left: 24px; padding-right: 24px; }
+}
+</style>
+</head>
+<body>
+
+<header class="hdr">
+  <div class="hdr-pulse"></div>
+  <span class="hdr-title">Dandy</span>
+  <button class="hdr-refresh" id="refreshBtn" onclick="cargarReportes()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M23 4v6h-6"></path>
+      <path d="M1 20v-6h6"></path>
+      <path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"></path>
+    </svg>
+    Actualizar
+  </button>
+  <span class="hdr-sub">Reportes · Progrentis</span>
+</header>
+
+<div class="wrap">
+
+  <div class="toolbar">
+    <div class="search-wrap">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"></circle>
+        <path d="M21 21l-4.35-4.35"></path>
+      </svg>
+      <input type="text" id="searchInput" placeholder="Buscar por institución..." autocomplete="off" oninput="aplicarFiltros()">
+    </div>
+    <div class="chip-row">
+      <div class="chip-group" id="riskChips">
+        <span class="filter-chip active" data-risk="__all__" onclick="setRiskFilter('__all__', this)">Todos</span>
+        <span class="filter-chip" data-risk="Sin riesgo" onclick="setRiskFilter('Sin riesgo', this)"><span class="rdot g"></span>Sin riesgo</span>
+        <span class="filter-chip" data-risk="Riesgo bajo" onclick="setRiskFilter('Riesgo bajo', this)"><span class="rdot y"></span>Riesgo bajo</span>
+        <span class="filter-chip" data-risk="Riesgo alto" onclick="setRiskFilter('Riesgo alto', this)"><span class="rdot o"></span>Riesgo alto</span>
+        <span class="filter-chip" data-risk="Riesgo crítico" onclick="setRiskFilter('Riesgo crítico', this)"><span class="rdot r"></span>Riesgo crítico</span>
+      </div>
+      <span class="count-badge" id="countBadge"></span>
+    </div>
+  </div>
+
+  <div id="content">
+    <!-- populated by JS -->
+  </div>
+
+</div>
+
+<script>
+const DANDY_API_URL   = 'dandy-api.php';
+const DANDY_API_TOKEN = '07e9e7b80541ce47e94e16c15add2e8cc1db9a37056dc2f8';
+
+const RISK_CLASS = {
+  'Sin riesgo': 'g',
+  'Riesgo bajo': 'y',
+  'Riesgo alto': 'o',
+  'Riesgo crítico': 'r',
+};
+
+let allReports = [];
+let currentRiskFilter = '__all__';
+let openCardIds = new Set();
+
+const contentEl = document.getElementById('content');
+const countBadgeEl = document.getElementById('countBadge');
+const refreshBtnEl = document.getElementById('refreshBtn');
+
+function escapeHtml(str) {
+  if (str === null || str === undefined) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function formatFecha(dateStr) {
+  if (!dateStr) return '—';
+  try {
+    const d = new Date(dateStr + 'T12:00:00');
+    if (isNaN(d.getTime())) return dateStr;
+    return d.toLocaleDateString('es-MX', { day: 'numeric', month: 'long', year: 'numeric' });
+  } catch (e) {
+    return dateStr;
+  }
+}
+
+function riskDotClass(nivel) {
+  return RISK_CLASS[nivel] || 'n';
+}
+
+function renderSkeletons(n) {
+  let html = '';
+  for (let i = 0; i < n; i++) {
+    html += `
+      <div class="skel-card">
+        <div class="skel-line skel-title"></div>
+        <div class="skel-line skel-meta"></div>
+      </div>`;
+  }
+  contentEl.innerHTML = html;
+  countBadgeEl.textContent = '';
+}
+
+function renderError(message, detail) {
+  contentEl.innerHTML = `
+    <div class="state-panel error">
+      <div class="state-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="8" x2="12" y2="12"></line>
+          <line x1="12" y1="16" x2="12.01" y2="16"></line>
+        </svg>
+      </div>
+      <div class="state-title">No se pudieron cargar los reportes</div>
+      <div class="state-sub">${escapeHtml(message)}</div>
+      ${detail ? `<div class="err-detail">${escapeHtml(detail)}</div>` : ''}
+      <button class="retry-btn" onclick="cargarReportes()">Reintentar</button>
+    </div>`;
+  countBadgeEl.textContent = '';
+}
+
+function renderEmpty() {
+  contentEl.innerHTML = `
+    <div class="state-panel empty">
+      <div class="state-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M9 11l3 3L22 4"></path>
+          <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"></path>
+        </svg>
+      </div>
+      <div class="state-title">Sin reportes todavía</div>
+      <div class="state-sub">Cuando el equipo registre visitas con el formulario de Dandy, aparecerán aquí.</div>
+    </div>`;
+  countBadgeEl.textContent = '0 reportes';
+}
+
+function renderNoMatches() {
+  contentEl.innerHTML = `
+    <div class="state-panel empty">
+      <div class="state-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"></circle>
+          <path d="M21 21l-4.35-4.35"></path>
+        </svg>
+      </div>
+      <div class="state-title">Sin resultados</div>
+      <div class="state-sub">Ningún reporte coincide con la búsqueda o el filtro actual.</div>
+    </div>`;
+  countBadgeEl.textContent = '0 reportes';
+}
+
+function cardTemplate(r) {
+  const risk = r.nivel_riesgo || '';
+  const dotClass = riskDotClass(risk);
+  const isOpen = openCardIds.has(r.id);
+  const obs = (r.observaciones || '').split('|').map(s => s.trim()).filter(Boolean);
+  const est = (r.estudiantes ?? '') === '' ? '—' : r.estudiantes;
+
+  const obsHtml = obs.length
+    ? `<div class="obs-list">${obs.map(o => `<div class="obs-tag">${escapeHtml(o)}</div>`).join('')}</div>`
+    : `<div class="text-block" style="color:var(--dim)">Sin observaciones</div>`;
+
+  return `
+    <div class="card${isOpen ? ' open' : ''}" data-id="${r.id}" onclick="toggleCard(${r.id})">
+      <div class="card-summary">
+        <div class="card-main">
+          <div class="card-inst">${escapeHtml(r.institucion || 'Sin nombre')}</div>
+          <div class="card-meta">
+            <span>${formatFecha(r.fecha_visita)}</span>
+            <span class="meta-sep">·</span>
+            <span class="risk-pill"><span class="rdot ${dotClass}"></span>${escapeHtml(risk || 'Sin clasificar')}</span>
+            <span class="meta-sep">·</span>
+            <span class="card-est">${est} est.</span>
+          </div>
+        </div>
+        <div class="expand-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
+        </div>
+      </div>
+      <div class="card-detail">
+        <div class="detail-grid">
+          <div class="detail-item">
+            <span class="detail-lbl">Contacto</span>
+            <span class="detail-val">${escapeHtml(r.contacto) || '—'}</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-lbl">Acompañantes</span>
+            <span class="detail-val">${escapeHtml(r.acompanantes) || '—'}</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-lbl">Proforma firmada</span>
+            <span class="badge ${Number(r.proforma_firmada) ? 'yes' : 'no'}">${Number(r.proforma_firmada) ? 'Sí' : 'No'}</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-lbl">Nota académica</span>
+            <span class="badge ${Number(r.nota_academica) ? 'yes' : 'no'}">${Number(r.nota_academica) ? 'Sí' : 'No'}</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-lbl">Precio de cobro</span>
+            <span class="detail-val mono">${r.precio_cobro !== null && r.precio_cobro !== undefined && r.precio_cobro !== '' ? '$' + r.precio_cobro : '—'}</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-lbl">Número de pagos</span>
+            <span class="detail-val mono">${r.num_pagos ?? '—'}</span>
+          </div>
+        </div>
+        <div class="detail-item">
+          <span class="card-tag">Observaciones</span>
+          ${obsHtml}
+        </div>
+        <div class="detail-item">
+          <span class="card-tag">Seguimiento</span>
+          <div class="text-block">${r.seguimiento ? escapeHtml(r.seguimiento) : '<span style="color:var(--dim)">—</span>'}</div>
+        </div>
+        <div class="detail-item">
+          <span class="card-tag">Opinión</span>
+          <div class="text-block">${r.opinion ? escapeHtml(r.opinion) : '<span style="color:var(--dim)">—</span>'}</div>
+        </div>
+      </div>
+    </div>`;
+}
+
+function toggleCard(id) {
+  if (openCardIds.has(id)) {
+    openCardIds.delete(id);
+  } else {
+    openCardIds.add(id);
+  }
+  const cardEl = contentEl.querySelector(`.card[data-id="${id}"]`);
+  if (cardEl) cardEl.classList.toggle('open');
+}
+
+function setRiskFilter(risk, el) {
+  currentRiskFilter = risk;
+  document.querySelectorAll('.filter-chip').forEach(c => {
+    c.classList.remove('active');
+    if (c.dataset.risk === risk) c.classList.add('active');
+  });
+  aplicarFiltros();
+}
+
+function aplicarFiltros() {
+  if (!Array.isArray(allReports) || allReports.length === 0) return;
+
+  const query = document.getElementById('searchInput').value.trim().toLowerCase();
+  const filtered = allReports.filter(r => {
+    const matchesSearch = !query || (r.institucion || '').toLowerCase().includes(query);
+    const matchesRisk = currentRiskFilter === '__all__' || (r.nivel_riesgo || '') === currentRiskFilter;
+    return matchesSearch && matchesRisk;
+  });
+
+  if (filtered.length === 0) {
+    renderNoMatches();
+    return;
+  }
+
+  contentEl.innerHTML = filtered.map(cardTemplate).join('');
+  countBadgeEl.textContent = `${filtered.length} reporte${filtered.length === 1 ? '' : 's'}`;
+}
+
+async function cargarReportes() {
+  refreshBtnEl.classList.add('spinning');
+  renderSkeletons(4);
+
+  try {
+    const res = await fetch(DANDY_API_URL, {
+      headers: { 'X-Dandy-Token': DANDY_API_TOKEN },
+    });
+
+    if (!res.ok) {
+      let detail = '';
+      try {
+        const body = await res.json();
+        detail = body.error || '';
+      } catch (e) { /* ignore */ }
+
+      if (res.status === 401) {
+        renderError('El token de autenticación fue rechazado por el servidor (401).', detail);
+      } else if (res.status === 404) {
+        renderError('El endpoint dandy-api.php no fue encontrado (404). Puede que aún no esté desplegado en el servidor.', detail);
+      } else {
+        renderError(`El servidor respondió con un error (HTTP ${res.status}).`, detail);
+      }
+      return;
+    }
+
+    const data = await res.json();
+
+    if (!Array.isArray(data)) {
+      renderError('El endpoint respondió con un formato inesperado.', JSON.stringify(data).slice(0, 300));
+      return;
+    }
+
+    allReports = data;
+    openCardIds = new Set();
+
+    if (allReports.length === 0) {
+      renderEmpty();
+    } else {
+      aplicarFiltros();
+    }
+  } catch (err) {
+    renderError(
+      'No se pudo conectar con dandy-api.php. Esto es normal si estás abriendo este archivo localmente antes de subirlo al servidor, o si hay un problema de red.',
+      String(err && err.message ? err.message : err)
+    );
+  } finally {
+    refreshBtnEl.classList.remove('spinning');
+  }
+}
+
+cargarReportes();
+</script>
+</body>
+</html>

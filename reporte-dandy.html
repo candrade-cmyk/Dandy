@@ -629,50 +629,60 @@ function switchTab(n) {
   window.scrollTo({ top: 0, behavior: 'instant' });
 }
 
-function buildMessage() {
-  const inst    = v('institucion') || '—';
-  const est     = v('est')         || '—';
-  const contact = v('contacto')   || '—';
-  const fecha   = document.getElementById('fecha').value;
-  const proforma = document.getElementById('proforma').checked;
-  const nota    = document.getElementById('nota').checked;
-  const precio  = v('precio')      || '—';
-  const seguim  = v('seguimiento') || '—';
-  const opinion = v('opinion')     || '—';
+// ── Config del guardado en base de datos ──
+// Debe apuntar al mismo directorio donde subas dandy-api.php en el servidor,
+// y el token debe ser idéntico al que definas como DANDY_API_TOKEN en el .env
+const DANDY_API_URL   = 'dandy-api.php';
+const DANDY_API_TOKEN = '07e9e7b80541ce47e94e16c15add2e8cc1db9a37056dc2f8';
 
+function collectFields() {
   const acomps = [...document.querySelectorAll('input[name="ac"]:checked')].map(e => e.value);
-  const acomp  = acomps.length ? acomps.join(', ') : 'Solo';
-
   const riesgoEl = document.querySelector('input[name="riesgo"]:checked');
-  const riesgo   = riesgoEl ? riesgoEl.value : '—';
-  const emoji    = { 'Sin riesgo': '🟢', 'Riesgo bajo': '🟡', 'Riesgo alto': '🟠', 'Riesgo crítico': '🔴' }[riesgo] || '⚪';
+  const pagosEl  = document.querySelector('input[name="pagos"]:checked');
+  const obs = [...document.querySelectorAll('.obs-item input:checked')].map(e => e.value);
 
-  const pagosEl = document.querySelector('input[name="pagos"]:checked');
-  const pagos   = pagosEl ? pagosEl.value : '—';
+  return {
+    institucion: v('institucion'),
+    estudiantes: parseInt(v('est')) || 0,
+    fecha_visita: document.getElementById('fecha').value || null,
+    contacto: v('contacto'),
+    acompanantes: acomps.length ? acomps.join(', ') : 'Solo',
+    nivel_riesgo: riesgoEl ? riesgoEl.value : '',
+    proforma_firmada: document.getElementById('proforma').checked,
+    nota_academica: document.getElementById('nota').checked,
+    precio_cobro: v('precio') ? parseFloat(v('precio')) : null,
+    num_pagos: pagosEl ? parseInt(pagosEl.value) : null,
+    observaciones: obs.length ? obs.join(' | ') : '',
+    seguimiento: v('seguimiento'),
+    opinion: v('opinion'),
+  };
+}
 
-  const obs = [...document.querySelectorAll('.obs-item input:checked')].map(e => `• ${e.value}`);
-  const obsStr = obs.length ? obs.join('\n') : '• Sin observaciones adicionales';
-
-  const fechaFmt = fecha
-    ? new Date(fecha + 'T12:00:00').toLocaleDateString('es-MX', { day: 'numeric', month: 'long', year: 'numeric' })
+function buildMessage(f) {
+  const emoji = { 'Sin riesgo': '🟢', 'Riesgo bajo': '🟡', 'Riesgo alto': '🟠', 'Riesgo crítico': '🔴' }[f.nivel_riesgo] || '⚪';
+  const obsStr = f.observaciones
+    ? f.observaciones.split(' | ').map(o => `• ${o}`).join('\n')
+    : '• Sin observaciones adicionales';
+  const fechaFmt = f.fecha_visita
+    ? new Date(f.fecha_visita + 'T12:00:00').toLocaleDateString('es-MX', { day: 'numeric', month: 'long', year: 'numeric' })
     : '—';
 
-  const msg = [
+  return [
     `🐕 *REPORTE DANDY — PROGRENTIS*`,
     `━━━━━━━━━━━━━━━━━━━━`,
-    `🏫 *Institución:* ${inst}`,
+    `🏫 *Institución:* ${f.institucion || '—'}`,
     `📅 *Fecha:* ${fechaFmt}`,
-    `👥 *Estudiantes:* ${est}`,
-    `🤝 *Reunidos con:* ${contact}`,
-    `👔 *Acompañado de:* ${acomp}`,
+    `👥 *Estudiantes:* ${f.estudiantes || '—'}`,
+    `🤝 *Reunidos con:* ${f.contacto || '—'}`,
+    `👔 *Acompañado de:* ${f.acompanantes}`,
     ``,
     `📊 *ESTADO DE RECOMPRA*`,
     `━━━━━━━━━━━━━━━━━━━━`,
-    `${emoji} *Nivel de riesgo:* ${riesgo}`,
-    `📋 *Proforma firmada:* ${proforma ? '✅ Sí' : '❌ No'}`,
-    `💰 *Precio cobro a familias:* $${precio}`,
-    `🗓 *Pagos:* ${pagos} pago(s)`,
-    `📝 *Nota académica:* ${nota ? '✅ Sí' : '❌ No'}`,
+    `${emoji} *Nivel de riesgo:* ${f.nivel_riesgo || '—'}`,
+    `📋 *Proforma firmada:* ${f.proforma_firmada ? '✅ Sí' : '❌ No'}`,
+    `💰 *Precio cobro a familias:* $${f.precio_cobro ?? '—'}`,
+    `🗓 *Pagos:* ${f.num_pagos ?? '—'} pago(s)`,
+    `📝 *Nota académica:* ${f.nota_academica ? '✅ Sí' : '❌ No'}`,
     ``,
     `⚠️ *OBSERVACIONES*`,
     `━━━━━━━━━━━━━━━━━━━━`,
@@ -680,23 +690,36 @@ function buildMessage() {
     ``,
     `✅ *SEGUIMIENTO*`,
     `━━━━━━━━━━━━━━━━━━━━`,
-    seguim,
+    f.seguimiento || '—',
     ``,
     `💼 *OPINIÓN DEL GERENTE*`,
     `━━━━━━━━━━━━━━━━━━━━`,
-    opinion,
+    f.opinion || '—',
   ].join('\n');
+}
 
-  return msg;
+async function guardarEnBD(fields) {
+  try {
+    await fetch(DANDY_API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Dandy-Token': DANDY_API_TOKEN },
+      body: JSON.stringify(fields),
+    });
+  } catch (e) {
+    console.warn('No se pudo guardar el reporte en la base de datos:', e);
+  }
 }
 
 function enviar() {
-  const msg = buildMessage();
-  window.open(`https://wa.me/50684816464?text=${encodeURIComponent(msg)}`, '_blank');
+  const fields = collectFields();
+  guardarEnBD(fields);
+  window.open(`https://wa.me/50684816464?text=${encodeURIComponent(buildMessage(fields))}`, '_blank');
 }
 
 async function copiarMensaje() {
-  const msg = buildMessage();
+  const fields = collectFields();
+  guardarEnBD(fields);
+  const msg = buildMessage(fields);
   const btn = document.getElementById('copyBtn');
   const lbl = document.getElementById('copyBtnLabel');
 
